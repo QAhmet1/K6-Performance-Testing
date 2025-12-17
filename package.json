@@ -1,0 +1,32 @@
+{
+  "name": "k6-performance-portfolio",
+  "version": "1.0.0",
+  "description": "Portfolio-grade performance testing framework using k6, Docker, InfluxDB and Grafana.",
+  "scripts": {
+    "test:load": "k6 run --out influxdb=http://localhost:8086/k6 scripts/load-test.js",
+    "test:stress": "k6 run --out influxdb=http://localhost:8086/k6 scripts/stress-test.js",
+    "test:spike": "k6 run --out influxdb=http://localhost:8086/k6 scripts/spike-test.js",
+    "test:endurance": "k6 run --out influxdb=http://localhost:8086/k6 scripts/endurance-test.js",
+    "test:all": "npm run test:load && npm run test:stress && npm run test:spike && npm run test:endurance",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:restart": "npm run docker:down && npm run docker:up",
+    "docker:logs:grafana": "docker compose logs -f grafana",
+    "docker:logs:influxdb": "docker compose logs -f influxdb"
+  },
+  "keywords": [
+    "k6",
+    "performance-testing",
+    "load-testing",
+    "stress-testing",
+    "spike-testing",
+    "endurance-testing",
+    "grafana",
+    "influxdb"
+  ],
+  "author": "Ahmet Demir",
+  "license": "MIT",
+  "devDependencies": {}
+}
+
+
