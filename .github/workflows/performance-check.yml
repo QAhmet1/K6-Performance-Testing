@@ -1,0 +1,26 @@
+name: k6 Performance Smoke Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  smoke-test:
+    name: Run Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run k6 Smoke Test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: scripts/load-test.js
+          # We run a very light version (1 user for 10s) just to validate scripts
+          flags: --vus 1 --duration 10s
+        env:
+          TARGET_BASE_URL: https://test.k6.io
+          # If you have an API_TOKEN, you can add it as a GitHub Secret later
