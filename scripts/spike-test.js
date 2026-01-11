@@ -1,5 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { BASE_URL,COMMON_THRESHOLDS, HEADERS,TEST_PROFILES} from '../config/settings.js';
+
 
 /**
  * SPIKE TEST
@@ -10,24 +12,25 @@ import { check, sleep } from 'k6';
  * - API_TOKEN can be used for hitting protected endpoints.
  */
 
-const BASE_URL = __ENV.TARGET_BASE_URL || 'https://test.k6.io';
-const AUTH_TOKEN = __ENV.API_TOKEN; // Optional auth token
+// const BASE_URL = __ENV.TARGET_BASE_URL || 'https://test.k6.io';
+// const AUTH_TOKEN = __ENV.API_TOKEN; // Optional auth token
 
 export const options = {
-    stages: [
-        { duration: '10s', target: 10 },   // Baseline
-        { duration: '10s', target: 500 },  // Sudden spike to 500 users
-        { duration: '1m', target: 500 },   // Sustain spike
-        { duration: '10s', target: 10 },   // Quick ramp-down
-    ],
+    // stages: [
+    //     { duration: '10s', target: 10 },   // Baseline
+    //     { duration: '10s', target: 500 },  // Sudden spike to 500 users
+    //     { duration: '1m', target: 500 },   // Sustain spike
+    //     { duration: '10s', target: 10 },   // Quick ramp-down
+    // ]
+    ...TEST_PROFILES.spike,
 };
 
 export default function () {
-    const headers = AUTH_TOKEN
-        ? { Authorization: `Bearer ${AUTH_TOKEN}` }
-        : {};
+    // const headers = AUTH_TOKEN
+    //     ? { Authorization: `Bearer ${AUTH_TOKEN}` }
+    //     : {};
 
-    const response = http.get(`${BASE_URL}/news.php`, { headers });
+    const response = http.get(`${BASE_URL}/news.php`, { headers:HEADERS()});
     
     check(response, {
         'status is 200': (r) => r.status === 200,

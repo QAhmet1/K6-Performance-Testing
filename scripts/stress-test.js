@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { BASE_URL,COMMON_THRESHOLDS, HEADERS,TEST_PROFILES} from '../config/settings.js';
 
 /**
  * STRESS TEST
@@ -14,22 +15,23 @@ const BASE_URL = __ENV.TARGET_BASE_URL || 'https://test.k6.io';
 const AUTH_TOKEN = __ENV.API_TOKEN; // Optional auth token
 
 export const options = {
-    stages: [
-        { duration: '2m', target: 100 }, // Below normal load
-        { duration: '2m', target: 200 }, // Normal load
-        { duration: '2m', target: 300 }, // Breaking point approach
-        { duration: '2m', target: 400 }, // Beyond expected capacity
-        { duration: '2m', target: 0 },   // Recovery phase
-    ],
+    // stages: [
+    //     { duration: '2m', target: 100 }, // Below normal load
+    //     { duration: '2m', target: 200 }, // Normal load
+    //     { duration: '2m', target: 300 }, // Breaking point approach
+    //     { duration: '2m', target: 400 }, // Beyond expected capacity
+    //     { duration: '2m', target: 0 },   // Recovery phase
+    // ]
+    ...TEST_PROFILES.stress,
 };
 
 export default function () {
-    const headers = AUTH_TOKEN
-        ? { Authorization: `Bearer ${AUTH_TOKEN}` }
-        : {};
+    // const headers = AUTH_TOKEN
+    //     ? { Authorization: `Bearer ${AUTH_TOKEN}` }
+    //     : {};
 
     // Example heavy endpoint using the base URL
-    const response = http.get(`${BASE_URL}/pi.php?decimals=3`, { headers });
+    const response = http.get(`${BASE_URL}/pi.php?decimals=3`, { headers:HEADERS() });
     
     check(response, {
         'is status 200': (r) => r.status === 200,
