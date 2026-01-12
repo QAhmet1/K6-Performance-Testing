@@ -21,6 +21,19 @@ jobs:
           filename: scripts/load-test.js
           # We run a very light version (1 user for 10s) just to validate scripts
           flags: --vus 1 --duration 10s
+
+      - name: Run Load Test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: scripts/load-test.js
+          flags: --summary-export=load_summary.json
+
+      - name: Run Spike Test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: scripts/spike-test.js
+          flags: --summary-export=spike_summary.json
+          
         env:
           TARGET_BASE_URL: https://test.k6.io
           # If you have an API_TOKEN, you can add it as a GitHub Secret later
