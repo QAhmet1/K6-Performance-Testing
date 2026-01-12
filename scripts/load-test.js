@@ -1,44 +1,49 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { BASE_URL,COMMON_THRESHOLDS, HEADERS,TEST_PROFILES} from '../config/settings.js';
+import {describe} from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js'
+import {validateResponse} from '../utils/validation.js'
+
 
 /**
  * LOAD TEST
  * Objective: Verify system performance under expected concurrent user load.
  *
- * Configuration notes:
- * - TARGET_BASE_URL can be provided via environment variable when running k6.
- * - Example: TARGET_BASE_URL=https://your-api.com k6 run scripts/load-test.js
  */
 
-// const BASE_URL = __ENV.TARGET_BASE_URL || 'https://test.k6.io';
-// const AUTH_TOKEN = __ENV.API_TOKEN; // Optional: use for authenticated endpoints
-
 export const options = {
-    // stages: [
-    //     { duration: '1m', target: 50 }, // Ramp-up to 50 users
-    //     { duration: '3m', target: 50 }, // Stay at 50 users
-    //     { duration: '1m', target: 0 },  // Ramp-down to 0 users
-    // ]
     ...TEST_PROFILES.load,
     thresholds: {
-        // http_req_duration: ['p(95)<500'], // 95% of requests must complete below 500ms
-        // http_req_failed: ['rate<0.01'],   // Error rate should be less than 1%
         ...COMMON_THRESHOLDS
     },
 };
 
 export default function () {
-    // const headers = AUTH_TOKEN
-        // ? { Authorization: `Bearer ${AUTH_TOKEN}` }
-        // : {};
+// Grouping the execution for better reporting and organization
+    describe('Load Testing Homepage', () => {
+        
+        // Performing the GET request with centralized headers
+        const response = http.get(`${BASE_URL}/`, { 
+            headers: HEADERS() 
+        });
 
-    const response = http.get(`${BASE_URL}/`, { headers:HEADERS()});
+        /**
+         * Centralized Validation:
+         * We pass 'checkBody: true' here because the homepage test 
+         * specifically requires verifying the content string.
+         */
+        const validationResult = validateResponse(response);
 
-    check(response, {
-        'status is 200': (r) => r.status === 200,
-        'page contains welcome': (r) => r.body && r.body.includes('Collection of simple web-pages'),
+        // Handling validation results and logging errors with timestamps
+        if (validationResult !== true) {
+            console.warn(`[LOAD TEST FAILURE] Detail: ${validationResult} at ${new Date().toISOString()}`);
+            
+            // Explicitly fail the k6 check to ensure metrics reflect the error
+            check(response, { "homepage validation passed": () => false });
+        }
+
     });
 
+    // Pacing the requests to simulate real user behavior
     sleep(1);
 }

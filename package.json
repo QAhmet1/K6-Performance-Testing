@@ -12,7 +12,8 @@
     "docker:down": "docker compose down",
     "docker:restart": "npm run docker:down && npm run docker:up",
     "docker:logs:grafana": "docker compose logs -f grafana",
-    "docker:logs:influxdb": "docker compose logs -f influxdb"
+    "docker:logs:influxdb": "docker compose logs -f influxdb",
+    "test:a":"k6 run scripts/spike-test.js"
   },
   "keywords": [
     "k6",

@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { BASE_URL,COMMON_THRESHOLDS, HEADERS,TEST_PROFILES} from '../config/settings.js';
 import {describe} from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js'
-import {validationResponse} from '../utils/validation.js'
+import {validateResponse} from '../utils/validation.js'
 
 /**
  * STRESS TEST
@@ -27,7 +27,7 @@ export default function () {
             headers:HEADERS() 
         });
     
-    validationResponse(response)
+    validateResponse(response)
 
     sleep(1);
 

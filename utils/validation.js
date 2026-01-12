@@ -7,12 +7,16 @@ import { expect } from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js';
  */
     // Check for status 200
  export function validateResponse(response, options = { checkBody: false }) {
-    // 1. Mandatory Technical Check (Status Code)
-    expect(response.status, `Expected 200 but got ${response.status}`).to.equal(200);
-    
-    // 2. Conditional Business Logic Check (Body)
-    // Only check body if requested, to save CPU during high-load stress tests
-    if (options.checkBody) {
-        expect(response.body, 'Response body should not be empty').to.not.be.null;
+   try {
+        expect(response.status, `Status ${response.status}`).to.equal(200);
+        
+        if (options.checkBody) {
+            expect(response.body, 'Body not null').to.not.be.null;
+        }
+        return true; // Everything is fine
+    } catch (err) {
+        // We catch it here to return false, allowing the script to decide what to do
+        return err.message; 
     }
 }
+

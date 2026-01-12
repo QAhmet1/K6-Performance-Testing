@@ -1,27 +1,19 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { BASE_URL,COMMON_THRESHOLDS, HEADERS,TEST_PROFILES} from '../config/settings.js';
+import {describe} from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js'
+import {validateResponse} from '../utils/validation.js'
+
 
 
 /**
  * SPIKE TEST
  * Objective: Evaluate system recovery after sudden extreme bursts of traffic.
  *
- * Configuration notes:
- * - TARGET_BASE_URL controls which system under test receives the spike traffic.
- * - API_TOKEN can be used for hitting protected endpoints.
  */
 
-// const BASE_URL = __ENV.TARGET_BASE_URL || 'https://test.k6.io';
-// const AUTH_TOKEN = __ENV.API_TOKEN; // Optional auth token
 
 export const options = {
-    // stages: [
-    //     { duration: '10s', target: 10 },   // Baseline
-    //     { duration: '10s', target: 500 },  // Sudden spike to 500 users
-    //     { duration: '1m', target: 500 },   // Sustain spike
-    //     { duration: '10s', target: 10 },   // Quick ramp-down
-    // ]
     ...TEST_PROFILES.spike,
     thresholds: {
         ...COMMON_THRESHOLDS
@@ -29,15 +21,33 @@ export const options = {
 };
 
 export default function () {
-    // const headers = AUTH_TOKEN
-    //     ? { Authorization: `Bearer ${AUTH_TOKEN}` }
-    //     : {};
+// Grouping the spike test execution for clear reporting
+    describe('Spike Testing News Endpoint', () => {
+        
+        // Simulating a request to a content-heavy news page
+        const response = http.get(`${BASE_URL}/news.php`, { headers: HEADERS() });
 
-    const response = http.get(`${BASE_URL}/news.php`, { headers:HEADERS()});
-    
-    check(response, {
-        'status is 200': (r) => r.status === 200,
+        /**
+         * Centralized Validation:
+         * We use the global utility to verify the technical integrity of the response.
+         * For spike tests, we usually keep checkBody false to reduce CPU overhead 
+         * during the extreme traffic peaks.
+         */
+        const validationResult = validateResponse(response);
+
+        // If validation fails during the spike, log the exact error and time
+        if (validationResult !== true) {
+            /**
+             * Logging during a Spike Test is vital to identify 
+             * if the system recovers after the traffic burst subsides.
+             */
+            console.warn(`[SPIKE TEST ALERT] Failure: ${validationResult} at ${new Date().toISOString()}`);
+            
+            // Mark the check as failed for k6 metrics
+            check(response, { "spike validation passed": () => false });
+        }
     });
 
+    // Short sleep to maintain the defined throughput
     sleep(1);
 }
