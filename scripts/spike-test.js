@@ -23,6 +23,9 @@ export const options = {
     //     { duration: '10s', target: 10 },   // Quick ramp-down
     // ]
     ...TEST_PROFILES.spike,
+    thresholds: {
+        ...COMMON_THRESHOLDS
+    },
 };
 
 export default function () {
